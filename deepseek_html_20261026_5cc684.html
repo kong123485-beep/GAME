@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>麻雀教學 · 基礎入門與食胡計番</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f7f3e9 0%, #ece3d5 100%);
+      color: #2e241f;
+      line-height: 1.6;
+      padding: 1.5rem 1rem;
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* 標題區 */
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+
+    .header h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #3e2c1b;
+      display: inline-block;
+      background: rgba(255, 247, 235, 0.8);
+      padding: 0.25rem 2rem 0.4rem;
+      border-radius: 100px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+      border: 1px solid #d9c6a6;
+      backdrop-filter: blur(2px);
+    }
+
+    .header .subhead {
+      margin-top: 0.75rem;
+      font-size: 1.15rem;
+      color: #5e4b36;
+      background: #f9f1e4;
+      display: inline-block;
+      padding: 0.3rem 1.8rem;
+      border-radius: 40px;
+      font-weight: 400;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      border: 1px dashed #b8a58b;
+    }
+
+    /* 卡片通用 */
+    .card {
+      background: #fffcf5;
+      border-radius: 28px;
+      padding: 1.8rem 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 12px 24px -8px rgba(80, 60, 40, 0.18),
+                  inset 0 1px 0 #ffffffcc,
+                  0 0 0 1px #f0e4d4;
+      transition: transform 0.15s ease;
+      border: 1px solid #e9dbc9;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 28px -10px rgba(80, 60, 40, 0.22), 0 0 0 1px #e6d6c2;
+    }
+
+    .card h2 {
+      font-size: 1.9rem;
+      border-left: 10px solid #b87c4b;
+      padding-left: 1.2rem;
+      margin-bottom: 1.4rem;
+      color: #3d2c1a;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+    }
+
+    .card h3 {
+      font-size: 1.35rem;
+      margin: 1.2rem 0 0.6rem;
+      color: #6a4e2e;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card h3::before {
+      content: "🀄";
+      font-size: 1.5rem;
+      opacity: 0.8;
+    }
+
+    /* 麻將牌圖示風格 */
+    .tile-icon {
+      display: inline-block;
+      background: #fefefe;
+      border: 1px solid #b0a28b;
+      border-radius: 8px;
+      padding: 0.1rem 0.5rem;
+      font-weight: 600;
+      box-shadow: 0 2px 0 #a08e78;
+      margin: 0 2px;
+      font-size: 0.95rem;
+      color: #2f1f0f;
+    }
+
+    .tile-red {
+      color: #b13b3b;
+      border-color: #b88b7a;
+      background: #fff6f0;
+    }
+
+    .tile-green {
+      color: #2d6e4a;
+      border-color: #8fb09b;
+      background: #f3faf6;
+    }
+
+    /* 牌組展示 */
+    .hand-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.8rem;
+      margin: 1rem 0 0.2rem;
+      align-items: center;
+    }
+
+    .tile {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      width: 2.8rem;
+      height: 3.8rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 0 #a89178, 0 6px 10px rgba(0, 0, 0, 0.1);
+      border: 1px solid #cfbfa9;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #2d1e0e;
+      margin-bottom: 0.3rem;
+      transition: 0.1s;
+    }
+
+    .tile.small {
+      width: 2.2rem;
+      height: 3.2rem;
+      font-size: 1.2rem;
+      border-radius: 8px;
+      box-shadow: 0 3px 0 #a89178, 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .tile-red-tile {
+      color: #b13b3b;
+      background: #fffaf7;
+    }
+
+    .tile-green-tile {
+      color: #2d6e4a;
+      background: #f7fff9;
+    }
+
+    /* 表格 */
+    .rules-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.2rem 0 0.8rem;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .rules-table th {
+      background: #dcc9b2;
+      color: #2e1d0c;
+      font-weight: 600;
+      padding: 0.8rem 1rem;
+      text-align: left;
+      font-size: 1rem;
+    }
+
+    .rules-table td {
+      background: #fffbf4;
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid #efe3d4;
+      vertical-align: top;
+    }
+
+    .rules-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* 清單 */
+    .step-list {
+      list-style: none;
+      counter-reset: step-counter;
+    }
+
+    .step-list li {
+      counter-increment: step-counter;
+      margin-bottom: 1.2rem;
+      padding-left: 2.8rem;
+      position: relative;
+      font-weight: 450;
+    }
+
+    .step-list li::before {
+      content: counter(step-counter);
+      background: #b87c4b;
+      color: white;
+      font-weight: 700;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      left: 0;
+      top: -0.2rem;
+      font-size: 1.1rem;
+      box-shadow: 0 3px 0 #6e4f32;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #e5d3bc;
+      padding: 0.2rem 0.9rem;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #4a3520;
+      letter-spacing: 0.02em;
+      margin-right: 0.5rem;
+    }
+
+    /* 小提示 */
+    .note {
+      background: #f7efe3;
+      border-left: 6px solid #b87c4b;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      margin: 1.4rem 0 0.4rem;
+      font-size: 0.98rem;
+      color: #3e2d1a;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .flex-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.8rem;
+      align-items: flex-start;
+    }
+
+    .flex-col {
+      flex: 1 1 280px;
+    }
+
+    /* 牌型卡片小格 */
+    .pattern-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .pattern-item {
+      background: #fefaf3;
+      border-radius: 16px;
+      padding: 1rem 1.2rem;
+      border: 1px solid #eadbc8;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .pattern-item .pattern-name {
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: #4f371e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.4rem;
+    }
+
+    .pattern-item .pattern-fan {
+      background: #b87c4b;
+      color: #fff9f0;
+      padding: 0.15rem 0.8rem;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    .pattern-item p {
+      font-size: 0.95rem;
+      color: #3a2d1e;
+    }
+
+    .pattern-item .example {
+      font-size: 0.88rem;
+      color: #6b5a46;
+      margin-top: 0.4rem;
+      padding-top: 0.3rem;
+      border-top: 1px dashed #e0cfba;
+    }
+
+    /* 頁腳 */
+    .footer {
+      text-align: center;
+      margin-top: 3rem;
+      font-size: 0.9rem;
+      color: #8b775f;
+      border-top: 1px solid #ddcdb9;
+      padding-top: 1.5rem;
+      letter-spacing: 0.03em;
+    }
+
+    .footer span {
+      display: inline-block;
+      background: #ede3d6;
+      padding: 0.2rem 1.2rem;
+      border-radius: 30px;
+    }
+
+    @media (max-width: 600px) {
+      .header h1 {
+        font-size: 2rem;
+        padding: 0.2rem 1rem;
+      }
+      .card {
+        padding: 1.4rem 1.2rem;
+      }
+      .card h2 {
+        font-size: 1.6rem;
+      }
+      .tile {
+        width: 2.4rem;
+        height: 3.3rem;
+        font-size: 1.2rem;
+      }
+      .pattern-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <!-- 標頭 -->
+  <div class="header">
+    <h1>🀄 麻雀教學</h1>
+    <div class="subhead">基礎入門 · 食胡條件 · 計番牌型</div>
+  </div>
+
+  <!-- 介紹卡片 -->
+  <div class="card">
+    <h2>🎲 麻雀簡介</h2>
+    <p style="font-size:1.1rem; margin-bottom:1rem;">
+      麻雀（又稱麻將）是源自中國的四人牌類遊戲，在華人世界非常流行。目標是透過摸牌、打牌與吃碰槓，
+      將手牌組成 <strong>四副順子或刻子 + 一對將眼</strong>（共 17 張牌，含摸牌後）。
+    </p>
+    <p>
+      這份教學以<strong>台灣麻雀</strong>（16 張牌）為基礎，但規則概念通用。初學者只需記住「湊對、湊順、湊刻」即可上手。
+    </p>
+  </div>
+
+  <!-- 認識牌組 -->
+  <div class="card">
+    <h2>🃏 認識麻雀牌</h2>
+    <div class="flex-row">
+      <div class="flex-col">
+        <h3>萬子（萬）</h3>
+        <p>一萬至九萬，共 36 張（每種 4 張）。</p>
+        <div class="hand-grid">
+          <div class="tile">一萬</div>
+          <div class="tile">二萬</div>
+          <div class="tile">三萬</div>
+          <div class="tile">⋯</div>
+          <div class="tile">九萬</div>
+        </div>
+        <p style="font-size:0.9rem; color:#6b5a46;">（圖示僅示意，實際牌面以「萬」字與數字呈現）</p>
+      </div>
+      <div class="flex-col">
+        <h3>筒子（餅）</h3>
+        <p>一筒至九筒，共 36 張。圖案為圓點。</p>
+        <div class="hand-grid">
+          <div class="tile tile-red-tile">一筒</div>
+          <div class="tile tile-red-tile">二筒</div>
+          <div class="tile tile-red-tile">三筒</div>
+          <div class="tile tile-red-tile">⋯</div>
+          <div class="tile tile-red-tile">九筒</div>
+        </div>
+      </div>
+      <div class="flex-col">
+        <h3>條子（索）</h3>
+        <p>一條至九條，共 36 張。圖案為竹節或鳥。</p>
+        <div class="hand-grid">
+          <div class="tile tile-green-tile">一條</div>
+          <div class="tile tile-green-tile">二條</div>
+          <div class="tile tile-green-tile">三條</div>
+          <div class="tile tile-green-tile">⋯</div>
+          <div class="tile tile-green-tile">九條</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top: 1.5rem;">
+      <h3>字牌（番子）</h3>
+      <p>風牌：東、南、西、北；箭牌：中、發、白。共 28 張（每種 4 張）。</p>
+      <div class="hand-grid">
+        <div class="tile">東</div>
+        <div class="tile">南</div>
+        <div class="tile">西</div>
+        <div class="tile">北</div>
+        <div class="tile tile-red-tile">中</div>
+        <div class="tile tile-green-tile">發</div>
+        <div class="tile">白</div>
+      </div>
+    </div>
+    <div class="note">
+      💡 總牌數：萬36 + 筒36 + 條36 + 字28 = <strong>136 張</strong>（不含花牌）。若使用花牌則共 144 張。
+      台灣麻雀通常使用 16 張手牌，與香港麻雀（13 張）不同。
+    </div>
+  </div>
+
+  <!-- 遊戲流程 -->
+  <div class="card">
+    <h2>📋 遊戲流程（以台麻 16 張為例）</h2>
+    <ul class="step-list">
+      <li><strong>決定座位與莊家：</strong>四人隨機入座，擲骰決定莊家。莊家可先摸牌、打牌。</li>
+      <li><strong>發牌：</strong>每人發 16 張牌（莊家 17 張），剩餘牌放在牌桌中央作為「牌牆」。</li>
+      <li><strong>補花：</strong>若手中有花牌（四季、梅蘭竹菊），需從牌牆補牌，直到手中無花牌為止。</li>
+      <li><strong>摸牌與打牌：</strong>玩家依逆時針方向輪流摸一張牌、打一張牌，保持手牌 16 張（莊家初始 17 張，打牌後 16 張）。</li>
+      <li><strong>吃、碰、槓：</strong>當別家打出牌時，可以喊「吃」（僅上家）、「碰」（任一家）、「槓」（任一家）來組合牌型。</li>
+      <li><strong>胡牌：</strong>當手牌湊成五副面子（順子或刻子）＋一對將眼，即可胡牌。可自摸或榮和（別人放槍）。</li>
+    </ul>
+    <div class="note">
+      🎯 面子：順子（如 一二三萬）、刻子（如 三張東風）。將眼：兩張相同的牌。
+    </div>
+  </div>
+
+  <!-- 吃碰槓說明 -->
+  <div class="card">
+    <h2>⚡ 吃 · 碰 · 槓 · 胡</h2>
+    <table class="rules-table">
+      <thead>
+        <tr><th style="width:20%">動作</th><th>說明</th><th style="width:25%">範例</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge">吃</span></td>
+          <td>只能吃上家打出的牌，組成順子。例如手上有 2、3 萬，上家打 1 萬或 4 萬即可吃。</td>
+          <td>手牌 <span class="tile-icon">二萬</span><span class="tile-icon">三萬</span> ＋ 上家打 <span class="tile-icon">一萬</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge">碰</span></td>
+          <td>任何一家打出與手中兩張相同的牌，即可碰成刻子。碰後需打出一張牌。</td>
+          <td>手牌兩張 <span class="tile-icon tile-red">紅中</span>，別家打 <span class="tile-icon tile-red">紅中</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge">槓</span></td>
+          <td>分為「明槓」（碰別人打出的第四張）與「暗槓」（自己摸到四張）。槓後需補牌。</td>
+          <td>手中有三張 <span class="tile-icon tile-green">發財</span>，別家打第四張，可明槓。</td>
+        </tr>
+        <tr>
+          <td><span class="badge">胡</span></td>
+          <td>完成 5 副面子 + 1 對將眼。可自摸或別人放炮。胡牌後遊戲結束。</td>
+          <td>手牌：一二三萬、四五六筒、七八九條、東東東、白白（將眼）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 食胡條件 -->
+  <div class="card">
+    <h2>🏁 食胡（胡牌）條件</h2>
+    <p style="font-size:1.05rem; margin-bottom:0.8rem;">食胡的基本公式：</p>
+    <div style="background:#f3e9dc; padding:1rem 1.5rem; border-radius:16px; text-align:center; font-size:1.3rem; font-weight:700; color:#3d2c1a; letter-spacing:0.03em;">
+      5 副面子 ＋ 1 對將眼
+    </div>
+    <div class="flex-row" style="margin-top:1.2rem;">
+      <div class="flex-col">
+        <h3>面子</h3>
+        <p><strong>順子</strong>：三張連續同花色的牌，例如 <span class="tile-icon">一二三萬</span>。<br>
+        <strong>刻子</strong>：三張相同的牌，例如 <span class="tile-icon">東東東</span>。</p>
+      </div>
+      <div class="flex-col">
+        <h3>將眼</h3>
+        <p>兩張完全相同的牌，例如 <span class="tile-icon">白白</span> 或 <span class="tile-icon">五萬五萬</span>。</p>
+      </div>
+    </div>
+    <h3>點樣食胡？</h3>
+    <ul style="margin-left:1.5rem; margin-bottom:0.8rem;">
+      <li><strong>自摸</strong>：自己摸到最後一張需要的牌，湊成胡牌型，即刻食胡。</li>
+      <li><strong>榮和（食放槍）</strong>：任何一家打出你差的那張牌，而你又符合胡牌型，就可以喊「胡」食佢。</li>
+    </ul>
+    <div class="note">
+      ⚠️ 食胡前必須已經「聽牌」（只差一張就胡），而且手牌完整符合 5 面子 + 1 將眼。
+      不同地區規則有差異（例如香港麻雀有「三番起糊」），但基本胡牌型都一樣。
+    </div>
+  </div>
+
+  <!-- 計番方法（香港牌） -->
+  <div class="card">
+    <h2>🧮 點計食胡（香港麻雀 · 計番）</h2>
+    <p>香港麻雀主流係<strong>三番起糊</strong>：食糊嗰手牌至少要湊夠 3 番，唔夠 3 番就當詐糊，冇得食。</p>
+    <table class="rules-table">
+      <thead>
+        <tr><th style="width:15%">番數</th><th>常見牌型</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>1 番</strong></td><td>自摸、平糊、正花、番牌（中/發/白刻子，或合門風/圈風的風牌刻子）</td></tr>
+        <tr><td><strong>2 番</strong></td><td>一台花（集齊「春夏秋冬」或「梅蘭菊竹」）</td></tr>
+        <tr><td><strong>3 番</strong></td><td>對對糊、混一色、小三元、小四喜、花糊（集齊 7 隻花）</td></tr>
+        <tr><td><strong>7 番</strong></td><td>清一色（全部同一花色，冇字牌）</td></tr>
+        <tr><td><strong>8 番</strong></td><td>四暗刻、八仙過海（集齊 8 隻花）</td></tr>
+        <tr><td><strong>10 番 / 例牌</strong></td><td>字一色、清幺九、九子連環</td></tr>
+        <tr><td><strong>13 番 / 例牌</strong></td><td>十三幺、天糊、地糊、大四喜</td></tr>
+      </tbody>
+    </table>
+    <div class="note">
+      💡 食糊嗰手牌可以<strong>同時疊加多種牌型</strong>。例如「混一色」（3番）＋「自摸」（1番）＋「正花」（1番）＝ 5 番，夠晒三番起糊。
+      但如果只得「平糊」（1番）＋「無花」（1番）＝ 2 番，就唔食得，要再搭多個牌型先得。
+    </div>
+    <p style="margin-top:0.8rem; font-size:0.95rem; color:#6b5a46;">
+      📌 台灣麻雀則計「台數」，通常冇「三番起糊」限制，0 台（屁胡）都可以食，只係贏得少啲。
+    </p>
+  </div>
+
+  <!-- 牌型解釋大全 -->
+  <div class="card">
+    <h2>📖 常見牌型解釋（含十三幺）</h2>
+    <p style="margin-bottom:0.5rem;">以下逐個解釋常見牌型嘅意思同例子：</p>
+    <div class="pattern-grid">
+
+      <div class="pattern-item">
+        <div class="pattern-name">對對糊 <span class="pattern-fan">3 番</span></div>
+        <p>手上全部面子都係<strong>刻子</strong>（三張一樣），冇任何順子。將眼都係一對。</p>
+        <div class="example">例：東東東、南南南、五萬五萬五萬、七筒七筒七筒、白白</div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-name">混一色 <span class="pattern-fan">3 番</span></div>
+        <p>手上只有<strong>一種數字花色（萬/筒/索）＋ 字牌</strong>，冇其他數字花色。</p>
+        <div class="example">例：一二三萬、五萬五萬五萬、東東東、中中中、白白</div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-name">小三元 <span class="pattern-fan">3 番</span></div>
+        <p>手上有<strong>中、發、白其中兩組刻子</strong>，第三組做將眼（一對）。</p>
+        <div class="example">例：中中中、發發發、白白（將眼）＋ 另外兩副面子</div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-name">小四喜 <span class="pattern-fan">3 番</span></div>
+        <p>手上有<strong>東南西北其中三組刻子</strong>，第四組做將眼。</p>
+        <div class="example">例：東東東、南南南、西西西、北北（將眼）＋ 一副面子</div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-name">花糊 <span class="pattern-fan">3 番</span></div>
+        <p>手上<strong>集齊 7 隻花牌</strong>（春夏秋冬梅蘭菊竹之中任意 7 隻），通常即刻食糊。</p>
+        <div class="example">例：春、夏、秋、冬、梅、蘭、菊（共 7 隻）</div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-name">清一色 <span class="pattern-fan">7 番</span></div>
+        <p>手上<strong>全部牌都係同一種數字花色</strong>，完全冇字牌、冇其他花色。</p>
+        <div class="example">例：一二三萬、四五六萬、七八九萬、二萬二萬二萬、五萬五萬（將眼）</div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-name">四暗刻 <span class="pattern-fan">8 番</span></div>
+        <p>手上有<strong>四組刻子都係自己摸返嚟（暗刻）</strong>，冇碰過人哋嘅牌。將眼可以係任意一對。</p>
+        <div class="example">例：自己摸齊 東東東、南南南、五萬五萬五萬、七筒七筒七筒、白白</div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-name">八仙過海 <span class="pattern-fan">8 番</span></div>
+        <p>手上<strong>集齊全部 8 隻花牌</strong>（春夏秋冬梅蘭菊竹），通常即刻食糊，係花糊嘅終極版。</p>
+        <div class="example">例：春、夏、秋、冬、梅、蘭、菊、竹（共 8 隻）</div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-name">字一色 <span class="pattern-fan">10 番 / 例牌</span></div>
+        <p>手上<strong>全部牌都係字牌</strong>（東南西北中發白），冇任何數字牌。</p>
+        <div class="example">例：東東東、南南南、中中中、發發發、白白（將眼）</div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-name">清幺九 <span class="pattern-fan">10 番 / 例牌</span></div>
+        <p>手上<strong>全部牌都係么九牌</strong>——即係一、九，同埋字牌。冇二至八嘅數字牌。</p>
+        <div class="example">例：一一一萬、九九九筒、東東東、中中中、白白（將眼）</div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-name">九子連環 <span class="pattern-fan">10 番 / 例牌</span></div>
+        <p>手上同一花色湊成 <strong>1112345678999</strong>（一至九各至少一隻，其中一和九各三隻），再加任意一隻同花色牌做將眼。</p>
+        <div class="example">例：一一一萬、二三四五六七八萬、九九九萬，再加多一隻萬子做眼</div>
+      </div>
+
+      <div class="pattern-item">
+        <div class="pattern-name">十三幺 <span class="pattern-fan">13 番 / 例牌</span></div>
+        <p>集齊<strong>全部 13 種幺九牌同字牌各一張</strong>，再加其中任何一張重複做「眼」。可以搶人哋嘅暗槓，係唯一有呢個權利嘅牌型，一定要門清自己摸。</p>
+        <div class="example">例：一萬、九萬、一筒、九筒、一索、九索、東、南、西、北、中、發、白，再加多一隻（例如多一隻東）做眼</div>
+      </div>
+
+    </div>
+    <div class="note" style="margin-top:1.5rem;">
+      💡 記法速記：對對糊＝全刻子；混一色＝一花色＋字牌；清一色＝得一隻花色冇字牌；
+      小三元/小四喜＝三元/四喜入面三組做刻子、一組做眼；字一色＝全字牌；
+      清幺九＝全么九；九子連環＝同一花色 1112345678999＋一隻；
+      四暗刻＝四組自己摸嘅刻子；八仙過海＝集齊 8 隻花；十三幺＝13 種幺九字牌各一張＋多一隻做眼。
+    </div>
+  </div>
+
+  <!-- 胡牌牌型範例 -->
+  <div class="card">
+    <h2>🏆 胡牌牌型範例</h2>
+    <p style="margin-bottom:0.8rem;">以下是一組標準的胡牌（17 張，含摸牌），五副面子 + 一對將眼：</p>
+    <div class="hand-grid" style="gap:0.8rem; flex-wrap:wrap;">
+      <div style="display:flex; gap:0.3rem;"><div class="tile small">一萬</div><div class="tile small">二萬</div><div class="tile small">三萬</div></div>
+      <div style="display:flex; gap:0.3rem;"><div class="tile small tile-red-tile">四筒</div><div class="tile small tile-red-tile">五筒</div><div class="tile small tile-red-tile">六筒</div></div>
+      <div style="display:flex; gap:0.3rem;"><div class="tile small tile-green-tile">七條</div><div class="tile small tile-green-tile">八條</div><div class="tile small tile-green-tile">九條</div></div>
+      <div style="display:flex; gap:0.3rem;"><div class="tile small">東</div><div class="tile small">東</div><div class="tile small">東</div></div>
+      <div style="display:flex; gap:0.3rem;"><div class="tile small">南</div><div class="tile small">南</div><div class="tile small">南</div></div>
+      <div style="display:flex; gap:0.3rem;"><div class="tile small">白</div><div class="tile small">白</div></div>
+    </div>
+    <div class="note" style="margin-top:1.2rem;">
+      ✅ 共 5 副面子（3+3+3+3+3=15 張）＋ 一對將眼（2 張）＝ 17 張。即為胡牌。
+    </div>
+  </div>
+
+  <!-- 新手小提醒 -->
+  <div class="card">
+    <h2>📌 新手小提醒</h2>
+    <div class="flex-row" style="gap:1.5rem;">
+      <div class="flex-col">
+        <h3>🔹 先學認牌</h3>
+        <p>萬、筒、條、字牌，每種花色從一到九。字牌只有東南西北中發白。多看幾次就能快速辨認。</p>
+      </div>
+      <div class="flex-col">
+        <h3>🔹 保持手牌整理</h3>
+        <p>將牌按花色、數字排列，方便看出順子與對子。初學者建議先將字牌與數字
