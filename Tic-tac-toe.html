@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>過三關 Tic-Tac-Toe</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: "Segoe UI", "PingFang HK", "Microsoft JhengHei", sans-serif;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: #fff;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 2rem;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  #controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  select, #reset {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  select {
+    background: rgba(255,255,255,0.9);
+    color: #1e3c72;
+  }
+
+  #reset {
+    background: #ffd166;
+    color: #1e3c72;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+    transition: transform 0.12s ease, background 0.2s ease;
+  }
+  #reset:hover { background: #ffc233; transform: translateY(-2px); }
+
+  #scoreboard {
+    display: flex;
+    gap: 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    background: rgba(255,255,255,0.12);
+    padding: 8px 24px;
+    border-radius: 30px;
+  }
+  #scoreboard span { opacity: 0.95; }
+
+  #status {
+    font-size: 1.25rem;
+    min-height: 1.5em;
+    font-weight: 600;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+
+  #board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 10px;
+    background: rgba(255,255,255,0.15);
+    padding: 10px;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+
+  .cell {
+    background: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 3rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1e3c72;
+    transition: transform 0.12s ease, background 0.2s ease;
+    user-select: none;
+  }
+
+  .cell:hover:not(:disabled) {
+    background: #e8f0ff;
+    transform: scale(1.05);
+  }
+
+  .cell:disabled { cursor: default; }
+
+  .cell.x { color: #e63946; }
+  .cell.o { color: #1d3557; }
+
+  .cell.win {
+    background: #ffd166;
+    animation: pop 0.4s ease;
+  }
+
+  @keyframes pop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  @media (max-width: 420px) {
+    #board {
+      grid-template-columns: repeat(3, 80px);
+      grid-template-rows: repeat(3, 80px);
+    }
+    .cell { font-size: 2.4rem; }
+  }
+</style>
+</head>
+<body>
+
+  <h1>過三關</h1>
+
+  <div id="controls">
+    <select id="mode">
+      <option value="pvp">雙人對戰</option>
+      <option value="pvc" selected>對戰電腦</option>
+    </select>
+    <select id="difficulty">
+      <option value="easy">簡單</option>
+      <option value="medium">中等</option>
+      <option value="hard" selected>困難（不敗）</option>
+    </select>
+    <button id="reset">重新開始</button>
+  </div>
+
+  <div id="scoreboard">
+    <span>X：<b id="scoreX">0</b></span>
+    <span>O：<b id="scoreO">0</b></span>
+    <span>和局：<b id="scoreD">0</b></span>
+  </div>
+
+  <div id="status">玩家 X 嘅回合</div>
+  <div id="board"></div>
+
+<script>
+  const boardEl    = document.getElementById("board");
+  const statusEl   = document.getElementById("status");
+  const resetBtn   = document.getElementById("reset");
+  const modeSel    = document.getElementById("mode");
+  const diffSel    = document.getElementById("difficulty");
+  const scoreXEl   = document.getElementById("scoreX");
+  const scoreOEl   = document.getElementById("scoreO");
+  const scoreDEl   = document.getElementById("scoreD");
+
+  const WIN_LINES = [
+    [0,1,2], [3,4,5], [6,7,8],
+    [0,3,6], [1,4,7], [2,5,8],
+    [0,4,8], [2,4,6]
+  ];
+
+  let board, current, gameOver, aiThinking;
+  let score = { X: 0, O: 0, D: 0 };
+
+  const HUMAN = "X";
+  const AI    = "O";
+
+  function init() {
+    board = Array(9).fill("");
+    current = "X";
+    gameOver = false;
+    aiThinking = false;
+    statusEl.textContent = "玩家 X 嘅回合";
+    boardEl.innerHTML = "";
+
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement("button");
+      cell.className = "cell";
+      cell.dataset.index = i;
+      cell.addEventListener("click", handleClick);
+      boardEl.appendChild(cell);
+    }
+  }
+
+  function handleClick(e) {
+    const index = Number(e.currentTarget.dataset.index);
+    if (gameOver || aiThinking || board[index]) return;
+
+    // 雙人模式：輪流落子；對電腦模式：只有 X 可以手動落子
+    if (modeSel.value === "pvc" && current !== HUMAN) return;
+
+    placeMove(index, current);
+  }
+
+  function placeMove(index, player) {
+    board[index] = player;
+    const cell = boardEl.children[index];
+    cell.textContent = player;
+    cell.classList.add(player.toLowerCase());
+    cell.disabled = true;
+
+    if (finishIfGameOver(player)) return;
+
+    current = player === "X" ? "O" : "X";
+
+    // 對電腦模式：輪到 AI
+    if (modeSel.value === "pvc" && current === AI && !gameOver) {
+      statusEl.textContent = "電腦思考中…";
+      aiThinking = true;
+      setTimeout(() => {
+        const move = getAIMove();
+        aiThinking = false;
+        placeMove(move, AI);
+      }, 350);
+      return;
+    }
+
+    statusEl.textContent = `玩家 ${current} 嘅回合`;
+  }
+
+  function finishIfGameOver(player) {
+    const winLine = getWinLine(player);
+    if (winLine) {
+      gameOver = true;
+      winLine.forEach(i => boardEl.children[i].classList.add("win"));
+      disableAll();
+
+      if (modeSel.value === "pvc") {
+        statusEl.textContent = player === AI
+          ? "🤖 電腦贏咗！"
+          : "🎉 你贏咗！";
+      } else {
+        statusEl.textContent = `🎉 玩家 ${player} 贏咗！`;
+      }
+
+      score[player]++;
+      updateScore();
+      return true;
+    }
+
+    if (board.every(v => v)) {
+      gameOver = true;
+      statusEl.textContent = "🤝 和局！";
+      score.D++;
+      updateScore();
+      return true;
+    }
+
+    return false;
+  }
+
+  function getWinLine(player) {
+    for (const line of WIN_LINES) {
+      const [a, b, c] = line;
+      if (board[a] === player && board[b] === player && board[c] === player) {
+        return line;
+      }
+    }
+    return null;
+  }
+
+  function disableAll() {
+    Array.from(boardEl.children).forEach(c => c.disabled = true);
+  }
+
+  function updateScore() {
+    scoreXEl.textContent = score.X;
+    scoreOEl.textContent = score.O;
+    scoreDEl.textContent = score.D;
+  }
+
+  /* ================= AI ================= */
+
+  function getAIMove() {
+    const empty = board.map((v, i) => v ? null : i).filter(i => i !== null);
+    if (empty.length === 0) return null;
+
+    const level = diffSel.value;
+
+    if (level === "easy") {
+      return empty[Math.floor(Math.random() * empty.length)];
+    }
+
+    if (level === "medium") {
+      // 50% 用最佳走法，50% 隨機
+      if (Math.random() < 0.5) {
+        return empty[Math.floor(Math.random() * empty.length)];
+      }
+      return bestMove();
+    }
+
+    // hard
+    return bestMove();
+  }
+
+  function bestMove() {
+    let bestScore = -Infinity;
+    let move = null;
+
+    for (let i = 0; i < 9; i++) {
+      if (board[i]) continue;
+      board[i] = AI;
+      const s = minimax(board, 0, false);
+      board[i] = "";
+      if (s > bestScore) {
+        bestScore = s;
+        move = i;
+      }
+    }
+    return move;
+  }
+
+  function minimax(b, depth, isMaximizing) {
+    if (getWinLine(AI))    return 10 - depth;
+    if (getWinLine(HUMAN)) return depth - 10;
+    if (b.every(v => v))   return 0;
+
+    if (isMaximizing) {
+      let best = -Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (b[i]) continue;
+        b[i] = AI;
+        best = Math.max(best, minimax(b, depth + 1, false));
+        b[i] = "";
+      }
+      return best;
+    } else {
+      let best = Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (b[i]) continue;
+        b[i] = HUMAN;
+        best = Math.min(best, minimax(b, depth + 1, true));
+        b[i] = "";
+      }
+      return best;
+    }
+  }
+
+  /* ====================================== */
+
+  resetBtn.addEventListener("click", init);
+  modeSel.addEventListener("change", () => {
+    init();
+    // 對電腦模式預設玩家先手
+    if (modeSel.value === "pvc") statusEl.textContent = "你係 X，你先手！";
+  });
+
+  init();
+</script>
+</body>
+</html>
