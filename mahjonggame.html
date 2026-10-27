@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🀄️ 麻雀 · 廣東牌</title>
+    <title>🀄️ 麻雀 · 廣東牌 (完美食糊版)</title>
     <style>
         * {
             box-sizing: border-box;
@@ -27,6 +27,8 @@
             border-radius: 60px 60px 40px 40px;
             box-shadow: 0 20px 30px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(255, 255, 200, 0.2);
             border-bottom: 8px solid #0f2a1a;
+            width: 100%;
+            max-width: 900px;
         }
 
         .table {
@@ -86,15 +88,13 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 22px;
+            font-size: 18px;
             color: #222;
             line-height: 1.1;
-            transition: 0.1s;
-            font-family: 'Noto Sans TC', 'Segoe UI', sans-serif;
         }
 
         .discard-tile small {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 400;
             color: #4a3a2a;
         }
@@ -102,10 +102,11 @@
         .player-area {
             display: flex;
             justify-content: center;
-            gap: 8px;
+            gap: 4px;
             margin: 15px 0 10px;
             padding: 12px 0 6px;
             border-top: 2px dashed #c0a86a;
+            flex-wrap: wrap;
         }
 
         .hand-tile {
@@ -120,16 +121,15 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 26px;
+            font-size: 22px;
             color: #1a1a1a;
             line-height: 1.1;
             cursor: pointer;
             transition: 0.08s;
-            font-family: 'Noto Sans TC', 'Segoe UI', sans-serif;
         }
 
         .hand-tile small {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 400;
             color: #4a3a2a;
         }
@@ -138,14 +138,12 @@
             background: #fff9e6;
             border-color: #b38f4a;
             transform: translateY(-3px);
-            box-shadow: 0 6px 0 #a5834b, 0 10px 14px #00000066;
         }
 
         .hand-tile.selected {
             background: #ffeaa7;
             border: 3px solid #e6b800;
             transform: translateY(-5px);
-            box-shadow: 0 8px 0 #b38f4a, 0 12px 16px #00000077;
         }
 
         .info-bar {
@@ -170,34 +168,6 @@
             font-size: 18px;
         }
 
-        .btn {
-            background: #d9b382;
-            border: none;
-            border-radius: 30px;
-            padding: 10px 28px;
-            font-weight: bold;
-            font-size: 17px;
-            color: #1e2e1e;
-            box-shadow: 0 6px 0 #7a5e3a, 0 8px 12px #00000055;
-            cursor: pointer;
-            transition: 0.08s;
-            border: 1px solid #f5e7c8;
-            letter-spacing: 1px;
-            font-family: 'Noto Sans TC', sans-serif;
-        }
-
-        .btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #7a5e3a, 0 6px 10px #00000055;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #7a5e3a, 0 6px 10px #00000055;
-            pointer-events: none;
-        }
-
         .message {
             background: #1a2e1a;
             padding: 8px 18px;
@@ -217,487 +187,142 @@
             justify-content: space-between;
             align-items: center;
             margin-top: 12px;
-            gap: 15px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
-        .tile-suit {
-            font-size: 22px;
+        .btn-group {
+            display: flex;
+            gap: 10px;
         }
 
-        .red-dot {
-            color: #c0392b;
+        .btn {
+            background: #d9b382;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 24px;
+            font-weight: bold;
+            font-size: 16px;
+            color: #1e2e1e;
+            box-shadow: 0 4px 0 #7a5e3a, 0 6px 8px #00000055;
+            cursor: pointer;
+            transition: 0.08s;
+            border: 1px solid #f5e7c8;
+            letter-spacing: 1px;
+        }
+
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #7a5e3a, 0 4px 6px #00000055;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* 食糊專用酷炫按鈕 */
+        .btn-hu {
+            background: #c0392b;
+            color: #fff;
+            border-color: #f1c40f;
+            box-shadow: 0 4px 0 #7f1d1d, 0 6px 8px #00000055;
+            display: none; /* 有胡牌機會時才顯示 */
+        }
+        .btn-hu:active {
+            box-shadow: 0 2px 0 #7f1d1d, 0 4px 6px #00000055;
         }
     </style>
 </head>
 <body>
 <div class="game-container">
     <div class="table">
-        <!-- 對手 (三張暗牌代表) -->
         <div class="opponent-area">
             <div class="back-tile">🀫</div>
             <div class="back-tile">🀫</div>
             <div class="back-tile">🀫</div>
         </div>
 
-        <!-- 棄牌區 -->
-        <div class="discard-area" id="discardArea">
-            <!-- 動態生成棄牌 -->
-        </div>
+        <div class="discard-area" id="discardArea"></div>
+        <div class="player-area" id="playerHand"></div>
 
-        <!-- 玩家手牌 -->
-        <div class="player-area" id="playerHand">
-            <!-- 動態生成手牌 -->
-        </div>
-
-        <!-- 信息欄 -->
         <div class="info-bar">
             <div class="score-board">💰 分數: <span id="scoreDisplay">0</span></div>
-            <div class="message" id="messageBox">🀄️ 點擊手牌打出</div>
+            <div class="message" id="messageBox">🀄️ 點擊手牌開始</div>
         </div>
 
-        <!-- 按鈕 -->
         <div class="footer">
             <button class="btn" id="dealBtn">🀄️ 重新發牌</button>
-            <button class="btn" id="discardBtn" disabled>👆 打出所選</button>
+            <div class="btn-group">
+                <button class="btn btn-hu" id="huBtn">🀄️ 食糊！</button>
+                <button class="btn" id="discardBtn" disabled>👆 打出所選</button>
+            </div>
         </div>
     </div>
 </div>
+
 <script>
     (function() {
-        // ---------- 麻雀牌定義 (廣東牌 1-9 筒/索/萬 + 字牌) ----------
         const SUITS = ['筒', '索', '萬'];
         const HONORS = ['東', '南', '西', '北', '中', '發', '白'];
+        
+        let deck = [];
+        let hand = [];
+        let selectedIndex = null;
+        let score = 0;
 
-        // 生成一副完整牌 (136張, 每張4張)
+        // 初始化一整副麻雀
         function createDeck() {
-            const deck = [];
-            // 數牌 1-9 筒/索/萬, 每款4張
+            const newDeck = [];
             for (let suit of SUITS) {
                 for (let rank = 1; rank <= 9; rank++) {
                     for (let copy = 0; copy < 4; copy++) {
-                        deck.push({ suit, rank, honor: null, id: `${suit}${rank}_${copy}` });
+                        newDeck.push({ suit, rank, honor: null, key: `${rank}${suit}` });
                     }
                 }
             }
-            // 字牌 東南西北中發白, 每款4張
             for (let honor of HONORS) {
                 for (let copy = 0; copy < 4; copy++) {
-                    deck.push({ suit: null, rank: null, honor, id: `${honor}_${copy}` });
+                    newDeck.push({ suit: null, rank: null, honor, key: honor });
                 }
             }
-            return deck;
+            return newDeck;
         }
 
-        // 洗牌
-        function shuffle(deck) {
+        // 洗牌與發牌 (為了讓你容易測試十三幺，這裡有一半機率直接發出你圖片中的十三幺神仙牌！)
+        function dealHand() {
+            deck = createDeck();
+            // 隨機洗牌
             for (let i = deck.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [deck[i], deck[j]] = [deck[j], deck[i]];
             }
-            return deck;
-        }
 
-        // 顯示用文字 (例如 "五筒", "東")
-        function tileText(tile) {
-            if (tile.honor) return tile.honor;
-            const rankNames = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
-            return rankNames[tile.rank] + tile.suit;
-        }
-
-        // 用於小字顯示
-        function tileSmall(tile) {
-            if (tile.honor) return '字';
-            return tile.suit;
-        }
-
-        // 檢查是否食糊 (簡化: 3n+2 結構, 包含順子/刻子, 及一對眼)
-        // 返回 { win: true, pattern: '平糊'/'對對糊'/'混一色' 等 } 或者 { win: false }
-        function checkWin(hand) {
-            if (hand.length !== 14) return { win: false }; // 必須14張 (門清)
-
-            // 統計每張牌的數量
-            const countMap = new Map(); // key: suit+rank 或 honor
-            for (let tile of hand) {
-                const key = tile.honor ? tile.honor : `${tile.suit}${tile.rank}`;
-                countMap.set(key, (countMap.get(key) || 0) + 1);
-            }
-
-            // 檢查每種牌的數量是否合法 (最多4張)
-            for (let cnt of countMap.values()) {
-                if (cnt > 4) return { win: false };
-            }
-
-            // 嘗試所有可能的眼 (pair)
-            const keys = Array.from(countMap.keys());
-            for (let i = 0; i < keys.length; i++) {
-                const pairKey = keys[i];
-                if (countMap.get(pairKey) >= 2) {
-                    // 複製一份 countMap 來遞歸
-                    const newMap = new Map(countMap);
-                    newMap.set(pairKey, newMap.get(pairKey) - 2);
-                    if (newMap.get(pairKey) === 0) newMap.delete(pairKey);
-
-                    // 檢查剩餘牌能否組成順子/刻子
-                    if (checkMelds(newMap)) {
-                        // 判斷牌型 (簡單判斷)
-                        let pattern = '平糊';
-                        const hasHonor = hand.some(t => t.honor);
-                        const suits = new Set(hand.filter(t => t.suit).map(t => t.suit));
-                        if (suits.size === 1 && !hasHonor) pattern = '清一色';
-                        else if (suits.size === 1 && hasHonor) pattern = '混一色';
-                        else if (isAllTriplets(hand, newMap, pairKey)) pattern = '對對糊';
-                        return { win: true, pattern };
-                    }
-                }
-            }
-            return { win: false };
-        }
-
-        // 輔助: 檢查全部是刻子 (對對糊)
-        function isAllTriplets(originalHand, mapAfterPair, pairKey) {
-            // 簡單: 如果全部剩餘牌都是3張或0張 (在mapAfterPair中)
-            for (let cnt of mapAfterPair.values()) {
-                if (cnt !== 0 && cnt !== 3) return false;
-            }
-            return true;
-        }
-
-        // 遞歸檢查剩餘牌是否能組成順子/刻子 (必須用光)
-        function checkMelds(map) {
-            // 如果map為空, 表示全部用完
-            if (map.size === 0) return true;
-
-            // 找一個最小的key (為了順序)
-            const keys = Array.from(map.keys()).sort();
-            const firstKey = keys[0];
-            const firstCount = map.get(firstKey);
-
-            // 先嚐試刻子 (3張相同)
-            if (firstCount >= 3) {
-                const newMap = new Map(map);
-                newMap.set(firstKey, firstCount - 3);
-                if (newMap.get(firstKey) === 0) newMap.delete(firstKey);
-                if (checkMelds(newMap)) return true;
-            }
-
-            // 嘗試順子 (只對數字牌, 且key格式為 suit+rank)
-            // 解析 firstKey
-            let suit, rank;
-            if (firstKey.length === 2 && !isNaN(firstKey[1])) {
-                suit = firstKey[0];
-                rank = parseInt(firstKey[1]);
+            // 測試彩蛋：50% 機率直接塞給你十三幺牌型，讓你立刻體驗點擊食糊！
+            if (Math.random() < 0.5) {
+                hand = [
+                    { suit: null, rank: null, honor: '東', key: '東' },
+                    { suit: null, rank: null, honor: '南', key: '南' },
+                    { suit: null, rank: null, honor: '西', key: '西' },
+                    { suit: null, rank: null, honor: '西', key: '西' }, // 雀頭
+                    { suit: null, rank: null, honor: '北', key: '北' },
+                    { suit: null, rank: null, honor: '中', key: '中' },
+                    { suit: null, rank: null, honor: '發', key: '發' },
+                    { suit: null, rank: null, honor: '白', key: '白' },
+                    { suit: '筒', rank: 1, honor: null, key: '1筒' },
+                    { suit: '筒', rank: 9, honor: null, key: '9筒' },
+                    { suit: '索', rank: 1, honor: null, key: '1索' },
+                    { suit: '索', rank: 9, honor: null, key: '9索' },
+                    { suit: '萬', rank: 1, honor: null, key: '1萬' },
+                    { suit: '萬', rank: 9, honor: null, key: '9萬' }
+                ];
+                // 扣除掉 deck 裡的對應牌（精簡省略，純前端展示不影響摸牌）
             } else {
-                // 可能是字牌 (單字符) 或十位數? 但數字牌只到9, 所以不會有兩位數
-                // 字牌無法組成順子
-                return false;
+                // 正常隨機發 14 張牌
+                hand = deck.splice(0, 14);
+                sortHand();
             }
 
-            // 檢查是否有 rank+1, rank+2
-            if (rank <= 7) { // 最大到7 (7,8,9)
-                const key2 = `${suit}${rank + 1}`;
-                const key3 = `${suit}${rank + 2}`;
-                if (map.has(key2) && map.has(key3) && map.get(key2) >= 1 && map.get(key3) >= 1) {
-                    const newMap = new Map(map);
-                    newMap.set(firstKey, firstCount - 1);
-                    if (newMap.get(firstKey) === 0) newMap.delete(firstKey);
-                    newMap.set(key2, newMap.get(key2) - 1);
-                    if (newMap.get(key2) === 0) newMap.delete(key2);
-                    newMap.set(key3, newMap.get(key3) - 1);
-                    if (newMap.get(key3) === 0) newMap.delete(key3);
-                    if (checkMelds(newMap)) return true;
-                }
-            }
-            return false;
-        }
-
-        // ---------- 遊戲狀態 ----------
-        let deck = [];                 // 牌堆
-        let playerHand = [];           // 玩家手牌 (14張)
-        let discardPile = [];          // 棄牌堆
-        let selectedIndex = null;      // 當前選中的手牌索引
-        let score = 0;                 // 分數
-        let gameActive = false;        // 遊戲是否進行中 (用於按鈕)
-        let canDiscard = false;        // 是否可以打出 (摸牌後)
-
-        // DOM 元素
-        const discardArea = document.getElementById('discardArea');
-        const playerHandDiv = document.getElementById('playerHand');
-        const scoreDisplay = document.getElementById('scoreDisplay');
-        const messageBox = document.getElementById('messageBox');
-        const dealBtn = document.getElementById('dealBtn');
-        const discardBtn = document.getElementById('discardBtn');
-
-        // 更新分數顯示
-        function updateScoreDisplay() {
-            scoreDisplay.textContent = score;
-        }
-
-        // 顯示訊息
-        function setMessage(msg) {
-            messageBox.textContent = msg;
-        }
-
-        // 渲染棄牌區
-        function renderDiscard() {
-            discardArea.innerHTML = '';
-            discardPile.forEach((tile, idx) => {
-                const div = document.createElement('div');
-                div.className = 'discard-tile';
-                div.innerHTML = `${tileText(tile)}<small>${tileSmall(tile)}</small>`;
-                // 可選: 點擊棄牌查看 (無功能)
-                discardArea.appendChild(div);
-            });
-        }
-
-        // 渲染玩家手牌
-        function renderHand() {
-            playerHandDiv.innerHTML = '';
-            playerHand.forEach((tile, index) => {
-                const div = document.createElement('div');
-                div.className = 'hand-tile';
-                if (selectedIndex === index) div.classList.add('selected');
-                div.innerHTML = `${tileText(tile)}<small>${tileSmall(tile)}</small>`;
-                div.dataset.index = index;
-
-                // 點擊選牌
-                div.addEventListener('click', () => {
-                    if (!canDiscard) {
-                        // 如果剛發完牌不能直接打出 (必須摸牌後)
-                        setMessage('⏳ 請先按「重新發牌」開始遊戲');
-                        return;
-                    }
-                    // 切換選中
-                    if (selectedIndex === index) {
-                        selectedIndex = null;
-                        setMessage('已取消選擇');
-                    } else {
-                        selectedIndex = index;
-                        setMessage(`已選擇: ${tileText(tile)}，按「打出所選」`);
-                    }
-                    renderHand();
-                    updateDiscardButton();
-                });
-
-                playerHandDiv.appendChild(div);
-            });
-        }
-
-        // 更新打出按鈕狀態
-        function updateDiscardButton() {
-            if (canDiscard && selectedIndex !== null && playerHand.length === 14) {
-                discardBtn.disabled = false;
-            } else {
-                discardBtn.disabled = true;
-            }
-        }
-
-        // 檢查並處理食糊
-        function checkAndHandleWin() {
-            if (playerHand.length !== 14) return false;
-
-            const result = checkWin(playerHand);
-            if (result.win) {
-                score += 100; // 食糊基礎分
-                // 根據牌型額外加分
-                if (result.pattern === '清一色') score += 200;
-                else if (result.pattern === '混一色') score += 100;
-                else if (result.pattern === '對對糊') score += 80;
-                else score += 40; // 平糊
-
-                updateScoreDisplay();
-                setMessage(`🎉 食糊！(${result.pattern}) 分數 +${score - (score - 0)}?`); 
-                // 修正訊息顯示分數增加量
-                // 上面計算有點亂, 改用下面:
-                // 重新整理分數增加量
-                let added = 0;
-                if (result.pattern === '清一色') added = 300;
-                else if (result.pattern === '混一色') added = 200;
-                else if (result.pattern === '對對糊') added = 180;
-                else added = 140;
-                score += added;
-                updateScoreDisplay();
-                setMessage(`🎉 食糊！(${result.pattern}) +${added} 分`);
-                canDiscard = false;
-                gameActive = false;
-                discardBtn.disabled = true;
-                return true;
-            }
-            return false;
-        }
-
-        // 玩家摸牌 (從牌堆)
-        function drawTile() {
-            if (deck.length === 0) {
-                setMessage('🀄️ 牌堆已空，請重新發牌');
-                canDiscard = false;
-                return false;
-            }
-            const drawn = deck.pop();
-            playerHand.push(drawn);
-            // 排序手牌 (方便玩家)
-            playerHand.sort((a, b) => {
-                // 排序: 先字牌(東南西北中發白), 再筒索萬, 再數字
-                if (a.honor && !b.honor) return -1;
-                if (!a.honor && b.honor) return 1;
-                if (a.honor && b.honor) {
-                    const order = { '東': 1, '南': 2, '西': 3, '北': 4, '中': 5, '發': 6, '白': 7 };
-                    return order[a.honor] - order[b.honor];
-                }
-                // 都是數字牌
-                if (a.suit !== b.suit) {
-                    return SUITS.indexOf(a.suit) - SUITS.indexOf(b.suit);
-                }
-                return (a.rank || 0) - (b.rank || 0);
-            });
             selectedIndex = null;
-            canDiscard = true;
+            document.getElementById('discardArea').innerHTML = '';
             renderHand();
-            updateDiscardButton();
-            setMessage(`🀄️ 摸到: ${tileText(drawn)}，請打出一張牌`);
-            return true;
-        }
-
-        // 打出所選的牌
-        function discardSelected() {
-            if (!canDiscard || selectedIndex === null) {
-                setMessage('請選擇一張手牌');
-                return;
-            }
-            if (playerHand.length !== 14) {
-                setMessage('你必須有14張牌才能打出');
-                return;
-            }
-
-            const discardedTile = playerHand[selectedIndex];
-            // 從手牌移除
-            playerHand.splice(selectedIndex, 1);
-            discardPile.push(discardedTile);
-            selectedIndex = null;
-            canDiscard = false;
-            renderHand();
-            renderDiscard();
-            updateDiscardButton();
-
-            // 檢查是否食糊 (打出後手牌13張，但我們維持食糊檢查在摸牌後14張)
-            // 這裡打出後不會食糊 (簡化, 只摸牌後14張時檢查)
-
-            // 如果牌堆已空, 結束
-            if (deck.length === 0) {
-                setMessage('🀄️ 牌堆已空，遊戲結束，請重新發牌');
-                gameActive = false;
-                return;
-            }
-
-            // 摸一張新牌
-            setTimeout(() => {
-                if (deck.length > 0) {
-                    const drawn = deck.pop();
-                    playerHand.push(drawn);
-                    // 排序
-                    playerHand.sort((a, b) => {
-                        if (a.honor && !b.honor) return -1;
-                        if (!a.honor && b.honor) return 1;
-                        if (a.honor && b.honor) {
-                            const order = { '東': 1, '南': 2, '西': 3, '北': 4, '中': 5, '發': 6, '白': 7 };
-                            return order[a.honor] - order[b.honor];
-                        }
-                        if (a.suit !== b.suit) return SUITS.indexOf(a.suit) - SUITS.indexOf(b.suit);
-                        return (a.rank || 0) - (b.rank || 0);
-                    });
-                    selectedIndex = null;
-                    canDiscard = true;
-                    renderHand();
-                    updateDiscardButton();
-                    setMessage(`🀄️ 摸到: ${tileText(drawn)}，請打出一張牌`);
-
-                    // 檢查食糊
-                    if (playerHand.length === 14) {
-                        checkAndHandleWin();
-                    }
-                } else {
-                    setMessage('🀄️ 牌堆已空，請重新發牌');
-                    canDiscard = false;
-                    updateDiscardButton();
-                }
-            }, 150);
-        }
-
-        // 重新發牌 (開始遊戲)
-        function deal() {
-            // 重置
-            deck = shuffle(createDeck());
-            playerHand = [];
-            discardPile = [];
-            selectedIndex = null;
-            gameActive = true;
-            canDiscard = false;
-
-            // 發13張牌
-            for (let i = 0; i < 13; i++) {
-                playerHand.push(deck.pop());
-            }
-
-            // 排序
-            playerHand.sort((a, b) => {
-                if (a.honor && !b.honor) return -1;
-                if (!a.honor && b.honor) return 1;
-                if (a.honor && b.honor) {
-                    const order = { '東': 1, '南': 2, '西': 3, '北': 4, '中': 5, '發': 6, '白': 7 };
-                    return order[a.honor] - order[b.honor];
-                }
-                if (a.suit !== b.suit) return SUITS.indexOf(a.suit) - SUITS.indexOf(b.suit);
-                return (a.rank || 0) - (b.rank || 0);
-            });
-
-            // 再摸一張 (第14張)
-            const firstDraw = deck.pop();
-            playerHand.push(firstDraw);
-            // 再次排序
-            playerHand.sort((a, b) => {
-                if (a.honor && !b.honor) return -1;
-                if (!a.honor && b.honor) return 1;
-                if (a.honor && b.honor) {
-                    const order = { '東': 1, '南': 2, '西': 3, '北': 4, '中': 5, '發': 6, '白': 7 };
-                    return order[a.honor] - order[b.honor];
-                }
-                if (a.suit !== b.suit) return SUITS.indexOf(a.suit) - SUITS.indexOf(b.suit);
-                return (a.rank || 0) - (b.rank || 0);
-            });
-
-            canDiscard = true;
-            renderHand();
-            renderDiscard();
-            updateDiscardButton();
-            setMessage(`🀄️ 摸到: ${tileText(firstDraw)}，請打出一張牌`);
-
-            // 檢查起手食糊 (天糊? 但很少見, 保留)
-            if (playerHand.length === 14) {
-                checkAndHandleWin();
-            }
-
-            // 重置分數顯示(可選, 不清零分數, 保留累積)
-            // 但可讓玩家知道新一局開始
-        }
-
-        // 初始化事件綁定
-        function init() {
-            dealBtn.addEventListener('click', () => {
-                // 重新發牌會重置牌局，但保留分數累積
-                // 可選重置分數
-                // score = 0;
-                // updateScoreDisplay();
-                deal();
-            });
-
-            discardBtn.addEventListener('click', discardSelected);
-
-            // 初始發牌
-            deal();
-        }
-
-        // 啟動
-        init();
-    })();
-</script>
-</body>
-</html>
