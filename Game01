@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>HTML5 中國象棋 - 人機對戰</title>
+    <style>
+        body { font-family: 'Microsoft JhengHei', sans-serif; background: #f0f0f0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .container { display: flex; gap: 20px; align-items: flex-start; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .controls { display: flex; flex-direction: column; gap: 15px; width: 200px; }
+        select, button { padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; background: #fff; }
+        button:hover { background: #e0e0e0; }
+        #status { font-weight: bold; font-size: 18px; color: #333; margin-bottom: 10px; text-align: center; }
+        
+        /* 棋盤樣式 */
+        .board { display: grid; grid-template-columns: repeat(9, 50px); grid-template-rows: repeat(10, 50px); background: #f4d06f; padding: 5px; border: 3px solid #8b4513; position: relative; }
+        .cell { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; }
+        
+        /* 畫棋盤線條 */
+        .cell::before { content: ""; position: absolute; background: #8b4513; }
+        .cell.horiz::before { width: 100%; height: 1px; top: 25px; left: 0; z-index: 1; }
+        .cell.vert::after { content: ""; position: absolute; background: #8b4513; width: 1px; height: 100%; top: 0; left: 25px; z-index: 1; }
+        
+        /* 楚河漢界 */
+        .river { grid-column: 1 / span 9; grid-row: 5; background: #eec590; display: flex; align-items: center; justify-content: space-around; font-weight: bold; font-size: 20px; color: #8b4513; border-top: 1px solid #8b4513; border-bottom: 1px solid #8b4513; z-index: 2; }
+        
+        /* 九宮格斜線 */
+        .diag-1 { position: absolute; width: 70px; height: 1px; background: #8b4513; transform: rotate(45deg); top: 75px; left: 165px; z-index: 1; pointer-events: none; }
+        .diag-2 { position: absolute; width: 70px; height: 1px; background: #8b4513; transform: rotate(-45deg); top: 75px; left: 165px; z-index: 1; pointer-events: none; }
+        .diag-3 { position: absolute; width: 70px; height: 1px; background: #8b4513; transform: rotate(45deg); bottom: 75px; left: 165px; z-index: 1; pointer-events: none; }
+        .diag-4 { position: absolute; width: 70px; height: 1px; background: #8b4513; transform: rotate(-45deg); bottom: 75px; left: 165px; z-index: 1; pointer-events: none; }
+
+        /* 棋子樣式 */
+        .piece { width: 42px; height: 42px; border-radius: 50%; background: #fdf5e6; border: 2px solid #8b4513; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); z-index: 10; user-select: none; }
+        .piece.red { color: red; border-color: red; }
+        .piece.black { color: black; border-color: black; }
+        .selected { border: 2px dashed #000fe6; background: #ccffcc; }
+        
+        /* 提示點 */
+        .hint::after { content: ""; position: absolute; width: 12px; height: 12px; border-radius: 50%; background: rgba(0, 128, 0, 0.6); z-index: 11; top: 19px; left: 19px; }
+    </style>
+</head>
+<body>
+
+<div id="status">紅方（玩家）回合</div>
+<div class="container">
+    <!-- 棋盤外框與斜線 -->
+    <div style="position: relative;">
+        <div class="board" id="chessboard"></div>
+        <div class="diag-1"></div><div class="diag-2"></div>
+        <div class="diag-3"></div><div class="diag-4"></div>
+    </div>
+    
+    <!-- 控制介面 -->
+    <div class="controls">
+        <label for="difficulty">AI 難度：</label>
+        <select id="difficulty">
+            <option value="1">低級 (隨機/直覺)</option>
+            <option value="2" selected>中級 (防守/貪吃)</option>
+            <option value="3">高級 (看遠一步)</option>
+        </select>
+        <button id="btnUndo">悔棋</button>
+        <button id="btnHint">下一步提示</button>
+        <button id="btnRestart">重新開始</button>
+    </div>
+</div>
+
+<script>
+// 棋子對應：正數為紅方，負數為黑方。1:帥/將, 2:仕/士, 3:相/象, 4:馬, 5:車, 6:炮, 7:兵/卒
+const P_帥=1, P_仕=2, P_相=3, P_馬=4, P_車=5, P_炮=6, P_兵=7;
+const NAMES = {
+    [P_帥]: '帥', [P_仕]: '仕', [P_相]: '相', [P_馬]: '馬', [P_車]: '車', [P_炮]: '炮', [P_兵]: '兵',
+    [-P_帥]: '將', [-P_仕]: '士', [-P_相]: '象', [-P_馬]: '馬', [-P_車]: '車', [-P_炮]: '炮', [-P_兵]: '卒'
+};
+// 基礎分值評価（簡單評估 AI 用）
+const VALUES = { [P_帥]: 10000, [P_仕]: 20, [P_相]: 20, [P_馬]: 45, [P_車]: 90, [P_炮]: 45, [P_兵]: 10 };
+
+let board = [];
+let history = [];
+let selectedTag = null; 
+let isRedTurn = true;
+let isAiThinking = false;
+
+// 初始化棋盤陣列 (10x9)
+function initBoard() {
+    board = [
+        [-5,-4,-3,-2,-1,-2,-3,-4,-5],
+        [ 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [ 0,-6, 0, 0, 0, 0, 0,-6, 0],
+        [-7, 0,-7, 0,-7, 0,-7, 0,-7],
+        [ 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        // 楚河漢界在第 5 行 (index 4-5 之間，畫面上獨立處理)
+        [ 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [ 7, 0, 7, 0, 7, 0, 7, 0, 7],
+        [ 0, 6, 0, 0, 0, 0, 0, 6, 0],
+        [ 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [ 5, 4, 3, 2, 1, 2, 3, 4, 5]
+    ];
+    history = [];
+    isRedTurn = true;
+    selectedTag = null;
+    isAiThinking = false;
+    document.getElementById("status").innerText = "紅方（玩家）回合";
+    render();
+}
+
+// 繪製棋盤 UI
+function render() {
+    const boardEl = document.getElementById("chessboard");
+    boardEl.innerHTML = "";
+    
+    for (let r = 0; r < 10; r++) {
+        if (r === 5) { // 渲染楚河漢界
+            let river = document.createElement("div");
+            river.className = "river";
+            river.innerHTML = "<span>楚河</span><span>漢界</span>";
+            boardEl.appendChild(river);
+            continue;
+        }
+        
+        let actualRow = r > 5 ? r - 1 : r; // 扣除河流行
+        for (let c = 0; c < 9; c++) {
+            let cell = document.createElement("div");
+            cell.className = "cell horiz vert";
+            cell.dataset.row = actualRow;
+            cell.dataset.col = c;
+            
+            let pieceNum = board[actualRow][c];
+            if (pieceNum !== 0) {
+                let pEl = document.createElement("div");
+                pEl.className = `piece ${pieceNum > 0 ? 'red' : 'black'}`;
+                pEl.innerText = NAMES[pieceNum];
+                cell.appendChild(pEl);
+            }
+            
+            cell.addEventListener("click", () => handleCellClick(actualRow, c));
+            boardEl.appendChild(cell);
+        }
+    }
+}
+
+// 點擊事件處理
+function handleCellClick(r, c) {
+    if (!isRedTurn || isAiThinking) return;
+    clearHints();
+    
+    let p = board[r][c];
+    if (selectedTag) {
+        if (p > 0) { // 換選自己其他紅子
+            selectPiece(r, c);
+        } else { // 嘗試移動或吃子
+            if (isValidMove(selectedTag.r, selectedTag.c, r, c, board)) {
+                movePiece(selectedTag.r, selectedTag.c, r, c);
+                if (!checkGameOver()) {
+                    isRedTurn = false;
+                    document.getElementById("status").innerText = "電腦思考中...";
+                    setTimeout(aiMove, 400);
+                }
+            } else {
+                selectedTag = null;
+                render();
+            }
+        }
+    } else if (p > 0) {
+        selectPiece(r, c);
+    }
+}
+
+function selectPiece(r, c) {
+    selectedTag = { r, c };
+    render();
+    // 高亮所選棋子
+    const index = (r >= 5 ? r + 1 : r) * 9 + c;
+    document.getElementById("chessboard").children[index].querySelector('.piece').classList.add('selected');
+}
+
+// 移動棋子邏輯
+function movePiece(fr, fc, tr, tc) {
+    history.push(JSON.parse(JSON.stringify(board))); // 記錄歷史作悔棋用
+    board[tr][tc] = board[fr][fc];
+    board[fr][fc] = 0;
+    selectedTag = null;
+    render();
+}
+
+// 簡易規則判斷 (核心合法移動驗證)
+function isValidMove(fr, fc, tr, tc, b) {
+    let p = b[fr][fc];
+    let target = b[tr][tc];
+    if (fr === tr && fc === tc) return false;
+    if (p === 0) return false;
+    if (target !== 0 && (p > 0 === target > 0)) return false; // 不能吃自己人
+    
+    let dr = tr - fr;
+    let dc = tc - fc;
+    let absDr = Math.abs(dr);
+    let absDc = Math.abs(dc);
+    let type = Math.abs(p);
+
+    switch(type) {
+        case P_帥: // 將/帥：九宮格內走直線
+            if (tc < 3 || tc > 5) return false;
+            if (p > 0 && (tr < 7 || tr > 9)) return false;
+            if (p < 0 && (tr < 0 || tr > 2)) return false;
+            return (absDr + absDc === 1);
+            
+        case P_仕: // 士/仕：九宮格內走斜線
+            if (tc < 3 || tc > 5) return false;
+            if (p > 0 && (tr < 7 || tr > 9)) return false;
+            if (p < 0 && (tr < 0 || tr > 2)) return false;
+            return (absDr === 1 && absDc === 1);
+            
+        case P_相: // 象/相：走田字，不能過河，防蹩象眼
+            if (p > 0 && tr < 5) return false;
+            if (p < 0 && tr > 4) return false;
+            if (absDr === 2 && absDc === 2) {
+                let midR = fr + dr / 2;
+                let midC = fc + dc / 2;
+                return b[midR][midC] === 0; // 象眼無子
+            }
+            return false;
+            
+        case P_馬: // 馬：走日字，防蹩馬腿
+            if ((absDr === 2 && absDc === 1) || (absDr === 1 && absDc === 2)) {
+                if (absDr === 2) {
+                    return b[fr + dr / 2][fc] === 0; // 蹩馬腿
+                } else {
+                    return b[fr][fc + dc / 2] === 0;
+                }
+            }
+            return false;
+            
+        case P_車: // 車：走直線，中間不能有子
+            if (fr !== tr && fc !== tc) return false;
+            return countPiecesBetween(fr, fc, tr, tc, b) === 0;
+            
+        case P_炮: // 炮：不吃子時中間0個，吃子時中間剛好1個
+            if (fr !== tr && fc !== tc) return false;
+            let cnt = countPiecesBetween(fr, fc, tr, tc, b);
+            return target === 0 ? cnt === 0 : cnt === 1;
+            
+        case P_兵: // 兵/卒：只能前進，過河後可左右
+            if (p > 0) { // 紅兵
+                if (dr > 0) return false; // 不能後退
+                if (fr >= 5 && dc !== 0) return false; // 未過河不能左右
+                return (absDr + absDc === 1);
+            } else { // 黑卒
