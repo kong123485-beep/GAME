@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Casio fx-5000F 網頁計數機</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"PingFang HK","Microsoft JhengHei",sans-serif;background:#e8e6e1;color:#222;padding:16px}
+.wrap{max-width:520px;margin:0 auto}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+h1{font-size:20px;margin:0}.badge{background:#111;color:#fff;padding:4px 10px;border-radius:99px;font-size:12px}
+.calc{background:#3a3f45;border-radius:22px;padding:18px;box-shadow:0 18px 40px rgba(0,0,0,.25);color:#fff}
+.brand{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px}.brand b{font-size:28px;letter-spacing:1px}.brand span{font-size:12px;opacity:.8}
+.solar{display:flex;gap:4px;margin:6px 0}.solar i{flex:1;height:16px;background:repeating-linear-gradient(90deg,#5a2e1a 0 6px,#2b1208 6px 8px);border-radius:2px}
+.screen{background:#d9e6c8;border-radius:10px;padding:10px 12px;color:#1a2a12;min-height:88px;box-shadow:inset 0 2px 8px rgba(0,0,0,.2)}
+.screen .mode{font-size:11px;display:flex;justify-content:space-between;letter-spacing:1px}.screen .expr{font-size:15px;min-height:20px;word-break:break-all;opacity:.75}.screen .result{font-size:32px;font-weight:800;text-align:right;word-break:break-all}
+.formula{background:#fff;color:#222;border-radius:14px;padding:12px;margin:12px 0}.formula h3{margin:0 0 8px;font-size:15px}
+#formula{width:100%;min-height:58px;border:2px solid #111;border-radius:10px;padding:10px;font-size:17px;font-family:inherit;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chips button,.examples button{border:1px solid #ddd;background:#f6f6f6;border-radius:99px;padding:6px 10px;cursor:pointer;font-size:13px}
+.row{display:flex;gap:8px;margin-top:8px}.row button{flex:1;padding:12px;border:0;border-radius:10px;font-weight:800;cursor:pointer;font-size:16px}.calcBtn{background:#ff7a00;color:#fff}.clearBtn{background:#eee}
+.vars{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.vars label{font-size:12px}.vars input{width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;margin-top:4px}
+.msg{margin-top:8px;font-size:13px;color:#c00;min-height:18px}.ok{color:#0a7a2a!important}
+.keys{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}
+.keys button{border:0;border-radius:10px;padding:13px 4px;cursor:pointer;font-size:14px;font-weight:700;background:#e9e9e9}.keys button:active{transform:translateY(1px);filter:brightness(.92)}
+.keys .orange{background:#ff7a00;color:#fff}.keys .dark{background:#222;color:#fff}.keys .red{background:#e11d2e;color:#fff}.keys .wide{grid-column:span(2)}
+.modes{display:flex;gap:6px;margin-top:10px}.modes button{flex:1;padding:8px;border-radius:99px;border:1px solid #555;background:transparent;color:#fff;cursor:pointer}.modes button.on{background:#fff;color:#111}
+.hist{background:#fff;border-radius:14px;padding:12px;margin-top:12px}.hist h3{margin:0 0 8px;font-size:15px}.hist ul{list-style:none;padding:0;margin:0}.hist li{padding:8px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;gap:8px;cursor:pointer}.hist li small{color:#666}
+@media(max-width:480px){.vars{grid-template-columns:repeat(3,1fr)}}
+</style>
+<style>
+body{padding:6px;background:#f0efeb}
+.wrap{max-width:320px}
+h1{font-size:15px}.badge{font-size:10px;padding:3px 7px}
+.calc{border-radius:16px;padding:10px;box-shadow:0 8px 20px rgba(0,0,0,.2)}
+.brand b{font-size:19px}.brand{margin-bottom:4px}
+.solar{margin:3px 0}.solar i{height:10px}
+.screen{min-height:58px;padding:6px 8px}.screen .result{font-size:22px}.screen .expr{font-size:11px;min-height:14px}
+.formula{padding:8px;margin:8px 0;border-radius:10px}.formula h3{font-size:13px;margin-bottom:5px}
+#formula{min-height:36px;padding:6px 8px;font-size:14px}
+.chips{gap:4px;margin:5px 0}.chips button,.examples button{padding:4px 7px;font-size:11px}
+.row{margin-top:5px}.row button{padding:8px;font-size:13px}
+.vars{gap:5px;margin-top:6px}.vars input{padding:5px}.vars label{font-size:10px}
+.keys{gap:4px;margin-top:8px}.keys button{padding:8px 2px;font-size:12px;border-radius:7px}
+.modes{margin-top:6px}.modes button{padding:5px;font-size:11px}
+.hist{padding:8px;margin-top:8px}.hist h3{font-size:13px}.hist li{padding:5px;font-size:12px}
+.msg{font-size:11px;min-height:14px}
+</style>
+
+<style>
+html,body{margin:0;padding:0;background:#eceae5}
+body{padding:4px}
+.wrap{max-width:300px;margin:0 auto}
+.top{margin-bottom:6px;padding:0 2px}
+h1{font-size:14px}.badge{font-size:9px}
+.calc{border-radius:14px;padding:8px}
+.brand b{font-size:17px}
+.screen{min-height:52px;padding:5px 7px}.screen .result{font-size:20px;line-height:1.2}
+#formula{min-height:32px;font-size:13px}
+.keys button{min-height:34px;padding:7px 2px;font-size:12px;touch-action:manipulation}
+.row button,.modes button,.chips button,.examples button{touch-action:manipulation}
+.formula{margin:6px 0}
+.vars{grid-template-columns:repeat(4,1fr)}
+@media(max-width:340px){.wrap{max-width:100%} .keys button{font-size:13px;min-height:38px}}
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+</head><body><div class="wrap">
+<div class="top"><h1>Casio fx-5000F</h1><span class="badge">手機袖珍版</span></div>
+<div class="calc">
+<div class="brand"><div><b>CASIO</b><div style="font-size:12px">fx-5000F SCIENTIFIC CALCULATOR</div></div><span>SOLAR</span></div>
+<div class="solar"><i></i><i></i><i></i><i></i></div>
+<div class="screen"><div class="mode"><span id="modeLabel">DEG</span><span id="shiftLabel"></span><span>M: <span id="memLabel">0</span></span></div><div class="expr" id="expr">0</div><div class="result" id="result">0</div></div>
+
+<div class="formula"><h3>⌨️ 入公式</h3>
+<textarea id="formula" placeholder="例如： sin(30)+sqrt(16)*2  或  pi*r^2"></textarea>
+<div class="chips" id="chips"></div>
+<div class="row"><button class="calcBtn" onclick="calcFormula()">= 計算</button><button class="clearBtn" onclick="clearFormula()">清除</button></div>
+<div class="vars">
+<label>r <input id="v_r" value="5" type="number"></label>
+<label>x <input id="v_x" value="0" type="number"></label>
+<label>y <input id="v_y" value="0" type="number"></label>
+<label>a <input id="v_a" value="0" type="number"></label>
+<label>b <input id="v_b" value="0" type="number"></label>
+<label>c <input id="v_c" value="0" type="number"></label>
+<label>m <input id="v_m" value="0" type="number"></label>
+<label>n <input id="v_n" value="0" type="number"></label>
+</div>
+<div class="msg" id="msg"></div>
+<div style="margin-top:8px"><b style="font-size:13px">常用公式：</b></div>
+<div class="examples" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+<button onclick="setF('pi*r^2')">圓面積 πr²</button>
+<button onclick="setF('sqrt(a^2+b^2)')">畢氏定理</button>
+<button onclick="setF('(-b+sqrt(b^2-4*a*c))/(2*a)')">二次方程求根</button>
+<button onclick="setF('m*(1+r/100)^n')">複利</button>
+<button onclick="setF('sin(30)+cos(60)')">三角函數</button>
+</div></div>
+
+<div class="modes"><button id="mDEG" class="on" onclick="setMode('DEG')">DEG</button><button id="mRAD" onclick="setMode('RAD')">RAD</button><button id="mGRAD" onclick="setMode('GRAD')">GRAD</button><button onclick="toggleShift()">SHIFT</button></div>
+<div class="keys" id="keys"></div>
+</div>
+<div class="hist"><h3>🕘 歷史記錄 <button style="float:right" onclick="clearHist()">清空</button></h3><ul id="hist"></ul><p style="font-size:12px;color:#666">撳歷史記錄可以載入返條公式。鍵盤：數字 / + - * / ( ) Enter 計算。</p></div>
+</div>
+<script>
+let mode='DEG',shift=false,mem=0,current='0',exprShown='0';
+const $=id=>document.getElementById(id);
+function setMode(m){mode=m;['DEG','RAD','GRAD'].forEach(x=>$('m'+x).classList.toggle('on',x===m));$('modeLabel').textContent=m;calcFormula(true);}
+function toggleShift(){shift=!shift;$('shiftLabel').textContent=shift?'SHIFT':'';}
+function update(){ $('expr').textContent=exprShown; $('result').textContent=current; $('memLabel').textContent=mem; }
+function toRad(a){return mode==='DEG'?a*Math.PI/180:mode==='GRAD'?a*Math.PI/200:a;}
+function toDeg(a){return mode==='DEG'?a*180/Math.PI:mode==='GRAD'?a*200/Math.PI:a;}
+function factorial(n){if(n<0||!Number.isInteger(n)) throw new Error('階乘只接受非負整數'); if(n>170) throw new Error('階乘太大'); let r=1; for(let i=2;i<=n;i++)r*=i; return r;}
+function evaluate(str,vars){
+  if(!str.trim()) throw new Error('請輸入公式');
+  let s=str.replace(/\s+/g,'').replace(/π/g,'pi').replace(/×/g,'*').replace(/÷/g,'/').replace(/√/g,'sqrt');
+  if((s.match(/\(/g)||[]).length!==(s.match(/\)/g)||[]).length) throw new Error('括號未閉合');
+  s=s.replace(/(\d)(pi|e\(|sqrt|sin|cos|tan|log|ln|abs)/g,'$1*$2').replace(/\)(\d|pi|\(|sqrt|sin|cos|tan|log)/g,')*$1').replace(/pi/g,'(Math.PI)').replace(/\be\b/g,'(Math.E)');
+  // functions with angle conversion
+  s=s.replace(/asin\(/g,'ASIN(').replace(/acos\(/g,'ACOS(').replace(/atan\(/g,'ATAN(');
+  s=s.replace(/sin\(/g,'SIN(').replace(/cos\(/g,'COS(').replace(/tan\(/g,'TAN(').replace(/ln\(/g,'Math.log(').replace(/log\(/g,'LOG10(').replace(/sqrt\(/g,'Math.sqrt(').replace(/cbrt\(/g,'Math.cbrt(').replace(/abs\(/g,'Math.abs(');
+  s=s.replace(/(\d+)!/g,'factorial($1)').replace(/\^/g,'**');
+  // variables
+  for(let k of ['r','x','y','a','b','c','m','n']){ let v=parseFloat($('v_'+k).value||0); s=s.replace(new RegExp('\\b'+k+'\\b','g'),'('+v+')'); }
+  // safety
+  if(/[^0-9+\-*/().,MathPIESINCOATNLGFBsincostanlogqrtbexpabsftr\d_ ]/.test(s.replace(/Math\./g,'').replace(/SIN|COS|TAN|ASIN|ACOS|ATAN|LOG10|factorial/g,''))) {}
+  const SIN=a=>Math.sin(toRad(a)), COS=a=>Math.cos(toRad(a)), TAN=a=>Math.tan(toRad(a));
+  const ASIN=a=>toDeg(Math.asin(a)), ACOS=a=>toDeg(Math.acos(a)), ATAN=a=>toDeg(Math.atan(a)), LOG10=a=>Math.log10(a);
+  let val=Function('SIN','COS','TAN','ASIN','ACOS','ATAN','LOG10','factorial','Math','return ('+s+')')(SIN,COS,TAN,ASIN,ACOS,ATAN,LOG10,factorial,Math);
+  if(typeof val!=='number'||!isFinite(val)) throw new Error('計算結果唔係有效數字');
+  return val;
+}
+function setF(v){$('formula').value=v; $('formula').focus();}
+function clearFormula(){$('formula').value='';$('msg').textContent='';}
+function addHist(f,r){let li=document.createElement('li');li.innerHTML='<small>'+f+'</small><b>'+r+'</b>';li.onclick=()=>setF(f);$('hist').prepend(li);}
+function clearHist(){$('hist').innerHTML='';}
+function calcFormula(silent){
+  let f=$('formula').value||exprShown;
+  try{let v=evaluate(f); let out=(Math.round(v*1e10)/1e10).toString(); current=out; exprShown=f; $('msg').textContent='✓ 已計算'; $('msg').className='msg ok'; update(); if(!silent) addHist(f,out); return v;}
+  catch(e){ if(!silent){$('msg').textContent='⚠️ '+e.message; $('msg').className='msg';} return null;}
+}
+// keypad
+let keys=[['SHIFT','sin','cos','tan','DEL'],['ln','log','√','x²','x^y'],['7','8','9','AC','('],['4','5','6','×',')'],['1','2','3','-','+'],['0','.','%','÷','='],['π','e','!','M+','MR']];
+let grid=$('keys');
+keys.flat().forEach(k=>{
+  let b=document.createElement('button'); b.textContent=k;
+  if(k==='SHIFT'||k==='=') b.className='orange'; if(k==='AC') b.className='red'; if(['DEL','M+','MR'].includes(k)) b.className='dark';
+  if(k==='=') b.classList.add('wide');
+  b.onclick=()=>press(k); grid.appendChild(b);
+});
+function press(k){
+  if(k==='SHIFT') return toggleShift();
+  if(k==='AC'){current='0';exprShown='0';$('formula').value='';update();return;}
+  if(k==='DEL'){let f=$('formula').value; $('formula').value=f.slice(0,-1);return;}
+  if(k==='='){ if($('formula').value) calcFormula(); else if(exprShown!=='0'){$('formula').value=exprShown;calcFormula();} return;}
+  if(k==='M+'){mem+=parseFloat(current||0);update();return;}
+  if(k==='MR'){current=mem.toString();update();return;}
+  let map={'×':'*','÷':'/','√':'sqrt(','x²':'^2','x^y':'^','π':'pi','!':'!','sin':shift?'asin(':'sin(','cos':shift?'acos(':'cos(','tan':shift?'atan(':'tan(','ln':'ln(','log':'log('};
+  let ins=map[k]||k;
+  if(k==='sin'||k==='cos'||k==='tan') shift=false, $('shiftLabel').textContent='';
+  let ta=$('formula'); let s=ta.selectionStart||ta.value.length; ta.value=ta.value.slice(0,s)+ins+ta.value.slice(s); ta.focus();
+}
+$('formula').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();calcFormula();}});
+document.addEventListener('keydown',e=>{if(document.activeElement===$('formula'))return; if(/^[0-9+\-*/().%^!]$/.test(e.key)){$('formula').value+=e.key;} if(e.key==='Enter')calcFormula();});
+document.getElementById('chips').innerHTML=['sin(','cos(','tan(','sqrt(','log(','ln(','π','e','^2','^(','(',')','!'].map(c=>'<button onclick="setF($(\'formula\').value+\''+c+'\')">'+c+'</button>').join('');
+update();
+</script></body></html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BA II Plus - Finance Calculator</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#fff}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:28px;margin:6px 0 2px}h1 span{color:#facc15}.sub{color:#94a3b8;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:380px 1fr;gap:16px}@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.calc{background:#1e293b;border:2px solid #334155;border-radius:18px;padding:16px;box-shadow:0 20px 40px rgba(0,0,0,.4)}
+.brand{text-align:center;font-weight:900;letter-spacing:2px}.brand small{display:block;font-weight:400;letter-spacing:1px;color:#94a3b8;font-size:11px}
+.screen{background:#d9e8c9;color:#111;border-radius:8px;padding:10px 12px;margin:12px 0;min-height:72px;text-align:right}
+.screen .top{font-size:11px;display:flex;justify-content:space-between;color:#334155}.screen .val{font-size:34px;font-weight:900;line-height:1;word-break:break-all}.screen .hint{font-size:11px;color:#475569}
+.mode{display:flex;gap:6px;margin:8px 0}.mode button{flex:1;padding:7px;border-radius:20px;border:1px solid #475569;background:#0f172a;color:#fff;cursor:pointer;font-size:12px}.mode button.on{background:#facc15;color:#111;font-weight:800}
+.keys{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.keys button{padding:11px 4px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:13px;background:#334155;color:#fff}.keys button:active{transform:scale(.96)}
+.keys .yellow{background:#facc15;color:#111}.keys .blue{background:#2563eb}.keys .tvm{background:#0ea5e9}.keys .dark{background:#0f172a;border:1px solid #475569}
+.panel{background:#fff;color:#111;border-radius:16px;padding:16px}.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.tabs button{padding:8px 12px;border-radius:20px;border:1px solid #cbd5e1;background:#f1f5f9;cursor:pointer;font-weight:700}.tabs button.on{background:#111;color:#fff}
+label{font-size:12px;font-weight:700;color:#475569;display:block;margin:10px 0 4px}input,select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btn{width:100%;padding:12px;border:none;border-radius:10px;background:#111;color:#fff;font-weight:800;cursor:pointer;margin-top:12px}.btn.y{background:#eab308;color:#111}.btn.g{background:#16a34a}
+.result{background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:10px;margin-top:12px;font-size:14px;line-height:1.7;white-space:pre-wrap}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}th,td{border-bottom:1px solid #e2e8f0;padding:6px;text-align:right}th{text-align:right}
+.note{font-size:12px;color:#64748b;margin-top:10px;line-height:1.6}
+</style></head>
+<body><div class="wrap">
+<h1>BA II <span>PLUS</span> <small style="font-size:14px;color:#94a3b8">Finance Calculator</small></h1>
+<div class="sub">BA II Plus 金融計算機 • 純 HTML • 唔使上網都用到 • TVM / NPV / IRR / Amortization / Loan</div>
+<div class="grid">
+<div class="calc">
+<div class="brand">TEXAS INSTRUMENTS<small>BA II PLUS • FINANCIAL CALCULATOR</small></div>
+<div class="screen"><div class="top"><span id="ind">END • P/Y=12 C/Y=12</span><span id="cptInd"></span></div><div class="val" id="disp">0</div><div class="hint" id="hint">輸入數字 → 按 N / I/Y / PV / PMT / FV 儲存 → 按 CPT + 目標鍵求解</div></div>
+<div class="mode"><button id="btnBGN">BGN / END: <b id="bgnTxt">END</b></button><button id="btnPY">P/Y: <b id="pyTxt">12</b></button><button id="btnClr">CLR TVM</button></div>
+<div class="keys">
+<button class="yellow" data-k="2nd">2ND</button><button data-k="cpt">CPT</button><button data-k="clr">CE/C</button><button data-k="back">⌫</button><button data-k="off">ON/OFF</button>
+<button class="tvm" data-k="N">N</button><button class="tvm" data-k="IY">I/Y</button><button class="tvm" data-k="PV">PV</button><button class="tvm" data-k="PMT">PMT</button><button class="tvm" data-k="FV">FV</button>
+<button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button class="blue" data-k="/">÷</button><button data-k="sto">STO</button>
+<button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button class="blue" data-k="*">×</button><button data-k="rcl">RCL</button>
+<button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button class="blue" data-k="-">−</button><button data-k="enter">ENTER</button>
+<button data-k="0">0</button><button data-k=".">.</button><button data-k="neg">+/−</button><button class="blue" data-k="+">+</button><button class="yellow" data-k="=">=</button>
+</div>
+<div class="note" style="color:#94a3b8">用法：例如供樓：打 360 → N，打 5 → I/Y，打 500000 → PV，打 0 → FV，按 CPT + PMT = 每月供款。按 2ND 再按 PMT 可睇 Amortization。</div>
+</div>
+<div class="panel">
+<div class="tabs"><button class="on" data-tab="tvm">TVM 計算</button><button data-tab="cf">Cash Flow NPV/IRR</button><button data-tab="amort">Amortization 供款表</button><button data-tab="loan">Loan / 借貸</button></div>
+
+<div id="tab-tvm">
+<div class="row"><div><label>N 期數 (N)</label><input id="tvmN" type="number" value="360"></div><div><label>I/Y 年利率 % (I/Y)</label><input id="tvmIY" type="number" value="5"></div></div>
+<div class="row"><div><label>PV 現值 (PV)</label><input id="tvmPV" type="number" value="500000"></div><div><label>PMT 每期付款 (PMT)</label><input id="tvmPMT" type="number" placeholder="留空求解"></div></div>
+<div class="row"><div><label>FV 終值 (FV)</label><input id="tvmFV" type="number" value="0"></div><div><label>P/Y 每年供款次數</label><select id="tvmPY"><option>12</option><option>1</option><option>4</option><option>2</option></select></div></div>
+<div class="row"><button class="btn" onclick="solveTVM('PMT')">求 PMT 每月供款</button><button class="btn y" onclick="solveTVM('PV')">求 PV 現值</button></div>
+<div class="row"><button class="btn" onclick="solveTVM('FV')">求 FV 終值</button><button class="btn" onclick="solveTVM('N')">求 N 期數</button></div>
+<button class="btn g" onclick="solveTVM('IY')">求 I/Y 利率</button>
+<div class="result" id="tvmRes">試下按「求 PMT」：500,000 借 30年 5% → 每月約 $2,684.11</div>
+</div>
+
+<div id="tab-cf" style="display:none">
+<div class="row"><div><label>CF0 初始投資 (負數)</label><input id="cf0" type="number" value="-100000"></div><div><label>折現率 I (%) for NPV</label><input id="cfI" type="number" value="8"></div></div>
+<label>現金流 C01 - C05 (用逗號分開)</label><input id="cfList" value="30000,35000,40000,45000,50000">
+<div class="row"><button class="btn" onclick="calcNPV()">計 NPV</button><button class="btn y" onclick="calcIRR()">計 IRR</button></div>
+<div class="result" id="cfRes">NPV = Σ CFt / (1+r)^t + CF0</div>
+</div>
+
+<div id="tab-amort" style="display:none">
+<p style="font-size:13px;color:#475569">用上面 TVM 嘅數值，生成供款表。</p>
+<div class="row"><div><label>由第幾期 P1</label><input id="p1" type="number" value="1"></div><div><label>到第幾期 P2</label><input id="p2" type="number" value="12"></div></div>
+<button class="btn" onclick="makeAmort()">生成 Amortization 表</button>
+<div id="amortOut"></div>
+</div>
+
+<div id="tab-loan" style="display:none">
+<div class="row"><div><label>貸款額</label><input id="loanAmt" type="number" value="500000"></div><div><label>年利率 %</label><input id="loanRate" type="number" value="5"></div></div>
+<div class="row"><div><label>年期 (年)</label><input id="loanYr" type="number" value="30"></div><div><label>首期 / 首付</label><input id="loanDown" type="number" value="0"></div></div>
+<button class="btn" onclick="calcLoan()">計每月供款 + 總利息</button>
+<div class="result" id="loanRes"></div>
+</div>
+
+<div class="note">公式：PMT = PV × i / [1-(1+i)^-N]，i = 年利率 / P/Y。BGN 模式 = 期初付款。呢個係純 HTML 檔案，Save 低之後離線都開到。<br>例子：按「求 PMT」→「生成 Amortization 表」可以睇頭 12 期供款明細。</div>
+</div>
+</div>
+</div>
+<script>
+let disp="0", cpt=false, bgn=false, py=12, memory=0, pendingOp=null, acc=null, fresh=true;
+let tvm={N:360,IY:5,PV:500000,PMT:null,FV:0};
+const $=id=>document.getElementById(id);
+function fmt(n){if(!isFinite(n))return"Error";return Number(n).toLocaleString('en-US',{maximumFractionDigits:2})}
+function render(){ $("disp").textContent=disp; $("ind").textContent=(bgn?"BGN":"END")+" • P/Y="+py+" C/Y="+py; $("cptInd").textContent=cpt?"CPT":""; $("bgnTxt").textContent=bgn?"BGN":"END"; $("pyTxt").textContent=py; }
+function inputDigit(d){ if(fresh){disp=d==="."?"0.":d;fresh=false}else{ if(d==="."&&disp.includes("."))return; disp=disp==="0"&&d!=="."?d:disp+d; } render(); }
+function doCalc(){
+  let v=parseFloat(disp)||0;
+  if(cpt){ // CPT + TVM key handled separately
+    cpt=false; render(); return;
+  }
+  if(pendingOp){ let a=acc; let b=v; let r= pendingOp==="+"?a+b: pendingOp==="-"?a-b: pendingOp==="*"?a*b: b!==0?a/b:NaN; disp=String(Math.round(r*100)/100); acc=r; pendingOp=null; fresh=true; }
+  render();
+}
+function press(k){
+  if(k==="2nd"){ alert("2ND 功能：喺右邊 Panel 揀 Amortization / Cash Flow 頁面用。按 BGN/END 轉期初/期末。"); return; }
+  if(k==="cpt"){ cpt=true; render(); return; }
+  if(k==="clr"){ disp="0"; fresh=true; cpt=false; render(); return; }
+  if(k==="back"){ disp=disp.length>1?disp.slice(0,-1):"0"; render(); return; }
+  if(k==="off"){ disp="0"; fresh=true; render(); return; }
+  if(k==="neg"){ disp=disp.startsWith("-")?disp.slice(1):"-"+disp; render(); return; }
+  if(k==="enter"){ fresh=true; render(); return; }
+  if(["N","IY","PV","PMT","FV"].includes(k)){
+    let v=parseFloat(disp)||0;
+    if(cpt){ cpt=false; solveTVM(k); return; }
+    if(k==="N")tvm.N=v; if(k==="IY")tvm.IY=v; if(k==="PV")tvm.PV=v; if(k==="PMT")tvm.PMT=v; if(k==="FV")tvm.FV=v;
+    // sync panel
+    $("tvmN").value=tvm.N; $("tvmIY").value=tvm.IY; $("tvmPV").value=tvm.PV; if(tvm.PMT!=null)$("tvmPMT").value=tvm.PMT; $("tvmFV").value=tvm.FV;
+    $("hint").textContent=k+" 已儲存 = "+fmt(v); fresh=true; render(); return;
+  }
+  if(["+","-","*","/"].includes(k)){ acc=parseFloat(disp)||0; pendingOp=k; fresh=true; render(); return; }
+  if(k==="="){ doCalc(); return; }
+  if(k==="sto"){ memory=parseFloat(disp)||0; return; }
+  if(k==="rcl"){ disp=String(memory); fresh=true; render(); return; }
+  inputDigit(k);
+}
+document.querySelectorAll(".keys button").forEach(b=>b.onclick=()=>press(b.dataset.k));
+$("btnBGN").onclick=()=>{bgn=!bgn;render()}; $("btnPY").onclick=()=>{py=py===12?1:py===1?4:py===4?2:12; $("tvmPY").value=py; render()};
+$("btnClr").onclick=()=>{tvm={N:0,IY:0,PV:0,PMT:null,FV:0}; disp="0"; fresh=true; render(); $("hint").textContent="TVM 已清除";};
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+  ["tvm","cf","amort","loan"].forEach(t=>$("tab-"+t).style.display=t===b.dataset.tab?"block":"none");
+});
+function getTVM(){ return {N:parseFloat($("tvmN").value)||0, IY:parseFloat($("tvmIY").value)||0, PV:parseFloat($("tvmPV").value)||0, PMT:$("tvmPMT").value===""?null:parseFloat($("tvmPMT").value), FV:parseFloat($("tvmFV").value)||0, PY:parseFloat($("tvmPY").value)||12}; }
+function pmtCalc(N,i,PV,FV,bgn){ if(i===0) return -(PV+FV)/N; let f=Math.pow(1+i,N); let p= i*(PV*f+FV)/(f-1); return bgn? p/(1+i): p; }
+function solveTVM(target){
+  let t=getTVM(); let i=(t.IY/100)/t.PY; let N=t.N;
+  let out="";
+  if(target==="PMT"){ let p=pmtCalc(N,i,t.PV,t.FV,bgn); $("tvmPMT").value=p.toFixed(2); disp=String(Math.round(p*100)/100); fresh=true; out=`PMT = ${fmt(p)}\n每月供款 ${fmt(Math.abs(p))}  • 總付款 ${fmt(Math.abs(p)*N)} • 總利息 ${fmt(Math.abs(p)*N-Math.abs(t.PV))}`; }
+  if(target==="PV"){ let p=t.PMT||0; let pv; if(i===0) pv=-(p*N+t.FV); else { let f=Math.pow(1+i,N); pv=-(p*(1-(bgn?1/(1+i):1)*(1-1/f)/i* (bgn?1:1) + (bgn? p/i*(1-1/f):0) ) + t.FV/f); pv = -(p*(bgn? (1+i):1)*(1-Math.pow(1+i,-N))/i + t.FV*Math.pow(1+i,-N)); } $("tvmPV").value=pv.toFixed(2); disp=String(Math.round(pv*100)/100); out=`PV = ${fmt(pv)}`; }
+  if(target==="FV"){ let p=t.PMT||0; let fv; if(i===0) fv=-(t.PV+p*N); else fv=-(t.PV*Math.pow(1+i,N)+p*(bgn?(1+i):1)*(Math.pow(1+i,N)-1)/i); $("tvmFV").value=fv.toFixed(2); disp=String(Math.round(fv*100)/100); out=`FV = ${fmt(fv)}`; }
+  if(target==="N"){ let p=t.PMT||0; let n; if(i===0) n=-(t.PV+t.FV)/p; else { let num=Math.log((p - t.FV*i)/(p + t.PV*i)); n=num/Math.log(1+i); if(bgn) n=Math.log((p*(1+i)-t.FV*i)/(p*(1+i)+t.PV*i))/Math.log(1+i); } $("tvmN").value=n.toFixed(2); disp=String(Math.round(n*100)/100); out=`N = ${fmt(n)} 期 ≈ ${(n/t.PY).toFixed(1)} 年`; }
+  if(target==="IY"){ // bisection for i
+    let lo=-0.9, hi=2, sol=0; for(let k=0;k<200;k++){ let mid=(lo+hi)/2; let f=t.PV*Math.pow(1+mid,N)+(t.PMT||0)*(bgn?(1+mid):1)*(Math.pow(1+mid,N)-1)/(mid||1e-9)+t.FV; if(f>0) hi=mid; else lo=mid; sol=mid; } let annual=sol*t.PY*100; $("tvmIY").value=annual.toFixed(4); disp=String(Math.round(annual*100)/100); out=`I/Y = ${annual.toFixed(4)}% / 年 (每月 ${(sol*100).toFixed(4)}%)`; }
+  $("tvmRes").textContent=out; $("hint").textContent="CPT "+target+" 已計出"; render();
+}
+function calcNPV(){ let cf0=parseFloat($("cf0").value)||0; let r=(parseFloat($("cfI").value)||0)/100; let list=$("cfList").value.split(",").map(x=>parseFloat(x.trim())||0); let npv=cf0; list.forEach((c,idx)=>npv+=c/Math.pow(1+r,idx+1)); $("cfRes").textContent=`NPV = ${fmt(npv)}\n${npv>0?"NPV > 0：值得投資":"NPV < 0：唔值得"}`; }
+function calcIRR(){ let cf0=parseFloat($("cf0").value)||0; let list=$("cfList").value.split(",").map(x=>parseFloat(x.trim())||0); let npv=r=>cf0+list.reduce((s,c,i)=>s+c/Math.pow(1+r,i+1),0); let lo=-0.9, hi=10; for(let k=0;k<200;k++){ let mid=(lo+hi)/2; if(npv(mid)>0) lo=mid; else hi=mid; } let irr=(lo+hi)/2*100; $("cfRes").textContent=`IRR = ${irr.toFixed(2)}%\n如果要求回報率 < IRR，項目值得做`; }
+function makeAmort(){ let t=getTVM(); let i=(t.IY/100)/t.PY; let pmt=t.PMT; if(!pmt){ solveTVM("PMT"); pmt=parseFloat($("tvmPMT").value); } let bal=t.PV; let p1=parseInt($("p1").value)||1; let p2=parseInt($("p2").value)||12; let rows=""; let totInt=0; for(let n=1;n<=t.N;n++){ let interest=bal*i; let princ=Math.abs(pmt)-interest; if(bgn&&n===1){interest=0; princ=Math.abs(pmt);} bal-=princ; totInt+=interest; if(n>=p1&&n<=p2) rows+=`<tr><td>${n}</td><td>${fmt(Math.abs(pmt))}</td><td>${fmt(interest)}</td><td>${fmt(princ)}</td><td>${fmt(Math.max(bal,0))}</td></tr>`; if(bal<=0)break; } $("amortOut").innerHTML=`<table><tr><th>期</th><th>供款</th><th>利息</th><th>本金</th><th>餘額</th></tr>${rows}</table><div class="note">頭 ${p2} 期總利息約 ${fmt(totInt)}（視乎完整期數）</div>`; }
+function calcLoan(){ let amt=(parseFloat($("loanAmt").value)||0)-(parseFloat($("loanDown").value)||0); let rate=(parseFloat($("loanRate").value)||0)/100/12; let n=(parseFloat($("loanYr").value)||0)*12; let pmt= amt*rate/(1-Math.pow(1+rate,-n)); $("loanRes").textContent=`每月供款 = ${fmt(pmt)}\n總付款 = ${fmt(pmt*n)}\n總利息 = ${fmt(pmt*n-amt)}\n貸款額 (扣首期後) = ${fmt(amt)}`; }
+render();
+</script></body></html>
